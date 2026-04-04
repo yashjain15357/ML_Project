@@ -10,74 +10,76 @@ from src.exception import CustomException
 from src.logger import logging
 
 from sklearn.model_selection import train_test_split
-
 from dataclasses import dataclass
+
+from src.components.data_transformation import DataTransformation
+from src.components.data_transformation import data_transformation_Config
 
 @dataclass
 class DataIngessionConfig:
-    """
-    Configuration class for data ingestion paths.
+    # """
+    # Configuration class for data ingestion paths.
     
-    Purpose: Stores the file paths where raw, training, and test data will be saved.
+    # Purpose: Stores the file paths where raw, training, and test data will be saved.
     
-    Attributes:
-        train_data_path (str): Path to save the training dataset after train-test split
-        testdata_path (str): Path to save the test dataset after train-test split
-        raw_data_path (str): Path to save the raw dataset without any split
+    # Attributes:
+    #     train_data_path (str): Path to save the training dataset after train-test split
+    #     testdata_path (str): Path to save the test dataset after train-test split
+    #     raw_data_path (str): Path to save the raw dataset without any split
     
-    Usage: Used by DataIngestion class to manage output file locations
-    """
+    # Usage: Used by DataIngestion class to manage output file locations
+    # """
     train_data_path: str = os.path.join("artifacts" , 'train.csv')
     testdata_path: str = os.path.join("artifacts" , 'test.csv')
     raw_data_path: str = os.path.join("artifacts" , 'data.csv')
 
 class DataIngestion :
-    """
-    Data Ingestion component for ML pipeline.
+    # """
+    # Data Ingestion component for ML pipeline.
     
-    Purpose: Handles loading raw data, splitting it into training and test sets,
-    and saving them to specified artifact paths.
+    # Purpose: Handles loading raw data, splitting it into training and test sets,
+    # and saving them to specified artifact paths.
     
-    Workflow:
-        1. Loads raw data from source CSV file
-        2. Saves raw data to artifacts folder
-        3. Performs 80-20 train-test split (80% train, 20% test)
-        4. Saves split datasets to separate files
-        5. Returns paths to both training and test datasets
+    # Workflow:
+    #     1. Loads raw data from source CSV file
+    #     2. Saves raw data to artifacts folder
+    #     3. Performs 80-20 train-test split (80% train, 20% test)
+    #     4. Saves split datasets to separate files
+    #     5. Returns paths to both training and test datasets
     
-    Usage:
-        obj = DataIngestion()
-        train_path, test_path = obj.initiate_data_ingestion()
-    """
+    # Usage:
+    #     obj = DataIngestion()
+    #     train_path, test_path = obj.initiate_data_ingestion()
+    # """
     def __init__(self):
-        """
-        Initialize DataIngestion with configuration.
+        # """
+        # Initialize DataIngestion with configuration.
         
-        Purpose: Sets up the ingestion configuration that defines output paths
-        """
+        # Purpose: Sets up the ingestion configuration that defines output paths
+        # """
         self.ingestion_config = DataIngessionConfig()
 
     def initiate_data_ingestion(self):
-        """
-        Execute the data ingestion process.
+        # """
+        # Execute the data ingestion process.
         
-        Purpose: Main method that orchestrates the entire data loading and splitting process
+        # Purpose: Main method that orchestrates the entire data loading and splitting process
         
-        Steps:
-            1. Read raw data from notebook/data/stud_eda.csv
-            2. Create artifacts directory if it doesn't exist
-            3. Save the raw data as-is to artifacts/data.csv
-            4. Split data into 80% train and 20% test (random_state=42 for reproducibility)
-            5. Save training data to artifacts/train.csv
-            6. Save test data to artifacts/test.csv
-            7. Log all operations for monitoring
+        # Steps:
+        #     1. Read raw data from notebook/data/stud_eda.csv
+        #     2. Create artifacts directory if it doesn't exist
+        #     3. Save the raw data as-is to artifacts/data.csv
+        #     4. Split data into 80% train and 20% test (random_state=42 for reproducibility)
+        #     5. Save training data to artifacts/train.csv
+        #     6. Save test data to artifacts/test.csv
+        #     7. Log all operations for monitoring
         
-        Returns:
-            tuple: (train_data_path, test_data_path) - Paths to the split datasets
+        # Returns:
+        #     tuple: (train_data_path, test_data_path) - Paths to the split datasets
         
-        Raises:
-            CustomException: If any error occurs during ingestion
-        """
+        # Raises:
+        #     CustomException: If any error occurs during ingestion
+        # """
         logging.info("Enter data integration method or component")
         try:
             df = pd.read_csv("notebook/data/stud_eda.csv")
@@ -103,4 +105,7 @@ class DataIngestion :
 
 if __name__ == "__main__":
     obj = DataIngestion()
-    obj.initiate_data_ingestion()
+    train_data , test_data = obj.initiate_data_ingestion()
+
+    data_transformation = DataTransformation()
+    data_transformation.initate_data_transformation(train_data , test_data)
