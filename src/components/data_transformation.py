@@ -101,7 +101,7 @@ class DataTransformation:
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="most_frequent")),
-                    ('onehot_encoder', OneHotEncoder(sparse_output=False)),
+                    ('onehot_encoder', OneHotEncoder(sparse_output=False, handle_unknown='ignore')),
                     ("scaler", StandardScaler())
                 ] 
             )
@@ -170,13 +170,19 @@ class DataTransformation:
             target_feature_test_df = test_df[target_column_name]
             
             logging.info(
-                f"Applying preprocessing object on training dataframe and testing dataframe"
+                f"Applying preprocessing object on training dataframe and testing dataframe."
             )
 
-            input_feature_train_array = Preprocessor_obj.fit_transform(input_feature_train_df)
-            input_feature_test_array = Preprocessor_obj.transform(input_feature_test_df)
+            input_feature_train_arr=Preprocessor_obj.fit_transform(input_feature_train_df)
+            input_feature_test_arr=Preprocessor_obj.transform(input_feature_test_df)
+
+            train_arr = np.c_[
+                input_feature_train_arr, np.array(target_feature_train_df)
+            ]
+            test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
+
+            logging.info(f"Saved preprocessing object.")
             
-            logging.info("Data transformation completed successfully")
 
             save_object(
                 file_path=self.data_transformation_config.prepocessor_obj_file_path,
@@ -184,8 +190,8 @@ class DataTransformation:
             )
             
             return (
-                input_feature_train_array,
-                input_feature_test_array,
+                train_arr,
+                test_arr,
                 self.data_transformation_config.prepocessor_obj_file_path
             )
 

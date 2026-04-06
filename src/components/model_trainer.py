@@ -1,7 +1,7 @@
 import os
 import sys
 from dataclasses import dataclass
-
+import pandas as pd
 from catboost import CatBoostRegressor
 from sklearn.ensemble import AdaBoostRegressor , GradientBoostingRegressor , RandomForestRegressor
 from sklearn.metrics import r2_score 
@@ -14,6 +14,7 @@ from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object
 from src.utils import evaluate_model
+from src.components.hyperParameter_tunning import hyperParameterTunning
 
 @dataclass
 class ModelTrainerConfig:
@@ -26,21 +27,33 @@ class ModelTrainer:
     def initiate_model_trainer(self , train_array  , test_array ):
         try:
             logging.info("Split train test input data")
-            x_train , y_train  , x_test , y_test = (
-                train_array[:,:-1],
-                train_array[: ,-1],
-                test_array[: , : -1],
-                test_array[: , -1]
-            )
+            
+            # Extract math_score from the LAST column (added by data_transformation.py)
+            y_train = train_array[:, -1]
+            y_test = test_array[:, -1]
+            
+            # Get all columns except the last one (which is math_score)
+            x_train = train_array[:, :-1]
+            x_test = test_array[:, :-1]
+            
+            print(f"X_train shape: {x_train.shape}, Y_train shape: {y_train.shape}")
+            print(f"X_test shape: {x_test.shape}, Y_test shape: {y_test.shape}")
+            print(f"Y_train range: {y_train.min():.2f} - {y_train.max():.2f}")
+
+            # Get best parameters from hyperparameter tuning
+            logging.info("Getting best hyperparameters")
+            hyperparameter_tuner = hyperParameterTunning()
+            best_params = hyperparameter_tuner.hyperparameter(train_array, test_array)
 
             models = {
-                "Linear R" : LinearRegression(),
-                "DecisionTree R" : DecisionTreeRegressor(),
-                "GradientBoost R" : GradientBoostingRegressor(),
-                "K-Neighbors R" : KNeighborsRegressor(),
-                "XGBoost R" : XGBRegressor(),
-                "CatBoosting R" : CatBoostRegressor(verbose=False),
-                "Adaboost R" : AdaBoostRegressor()
+                # "Linear R" : LinearRegression(**best_params.get("liner", {})),
+                "DecisionTree R" : DecisionTreeRegressor(**best_params.get("DecisionTree", {})),
+                "GradientBoost R" : GradientBoostingRegressor(**best_params.get("GradientBoost", {})),
+                "K-Neighbors R" : KNeighborsRegressor(**best_params.get("KNN", {})),
+                "XGBoost R" : XGBRegressor(**best_params.get("xgboost", {})),
+                "CatBoosting R" : CatBoostRegressor(verbose=False, **best_params.get("catBoost", {})),
+                "Adaboost R" : AdaBoostRegressor(**best_params.get("Adaboost", {})),
+                "randomForest" : RandomForestRegressor(**best_params.get("RF", {}))
             }
 
             model_report : dict = evaluate_model(x_train = x_train , y_train=y_train ,x_test=x_test, 
