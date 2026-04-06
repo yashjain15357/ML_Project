@@ -1,4 +1,10 @@
 <html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Exam Performance Indicator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 <body>
     <div class="login">
        <h1>Student Exam Performance Indicator</h1>
@@ -104,8 +110,11 @@
             <input class="btn btn-primary" type="submit" value="Predict your Maths Score" required />
         </div>
     </form>
-    <h2>
-       THE  prediction is {{result}}
-    </h2>
-   <body>
+    {% if result %}
+    <div class="result-container">
+        <h2>Predicted Math Score</h2>
+        <div class="result-value">{{ "%.2f"|format(result) }}</div>
+    </div>
+    {% endif %}
+</body>
 </html>
